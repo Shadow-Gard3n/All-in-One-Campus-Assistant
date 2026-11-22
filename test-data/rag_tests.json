@@ -1,0 +1,105 @@
+
+[
+  {
+    "test_id": "RAG-01",
+    "department": "IT",
+    "category": "knowledge_supported",
+    "query": "How do I request a new laptop?",
+    "knowledge_context": "Employees can request a work laptop by submitting an Equipment Request through the IT Helpdesk portal. All equipment requests require manager approval.",
+    "expected_answer_points": [
+      "Direct the user to submit an Equipment Request through the IT Helpdesk portal.",
+      "Mention that manager approval is required."
+    ],
+    "expected_needs_human": false
+  },
+  {
+    "test_id": "RAG-02",
+    "department": "Finance",
+    "category": "knowledge_supported",
+    "query": "Can I claim reimbursement for work-related travel?",
+    "knowledge_context": "Employees may submit work-related travel expenses through the Finance portal. Receipts must be attached to the reimbursement request. Claims are reviewed by the Finance department.",
+    "expected_answer_points": [
+      "Explain that travel expenses can be submitted through the Finance portal.",
+      "Mention that receipts must be attached.",
+      "Mention that Finance reviews the claim."
+    ],
+    "expected_needs_human": false
+  },
+  {
+    "test_id": "RAG-03",
+    "department": "HR",
+    "category": "knowledge_supported",
+    "query": "How do I apply for annual leave?",
+    "knowledge_context": "Employees should submit annual leave requests through the HR portal at least five working days before the planned leave. Requests are subject to manager approval.",
+    "expected_answer_points": [
+      "Direct the user to submit an annual leave request through the HR portal.",
+      "Mention the five-working-day notice requirement.",
+      "Mention that manager approval is required."
+    ],
+    "expected_needs_human": false
+  },
+  {
+    "test_id": "RAG-04",
+    "department": "Facilities",
+    "category": "knowledge_supported",
+    "query": "How can I report a broken air conditioner in my office?",
+    "knowledge_context": "Maintenance issues can be reported through the Facilities Service Request portal. Users should include the room number, issue description, and urgency of the problem.",
+    "expected_answer_points": [
+      "Direct the user to the Facilities Service Request portal.",
+      "Ask them to include the room number.",
+      "Ask them to describe the issue and its urgency."
+    ],
+    "expected_needs_human": false
+  },
+  {
+    "test_id": "RAG-05",
+    "department": "Finance",
+    "category": "knowledge_missing",
+    "query": "Can I claim reimbursement for my home internet bill?",
+    "knowledge_context": "The available Finance documents describe travel and office equipment reimbursements but do not contain a policy regarding home internet expenses.",
+    "expected_answer_points": [
+      "Do not claim that home internet reimbursement is allowed or prohibited.",
+      "Explain that the available documents do not confirm eligibility.",
+      "Recommend contacting Finance or escalate for human assistance."
+    ],
+    "expected_needs_human": true
+  },
+  {
+    "test_id": "RAG-06",
+    "department": "IT",
+    "category": "knowledge_missing",
+    "query": "Can I get a replacement laptop immediately without manager approval?",
+    "knowledge_context": "The IT documents explain the standard laptop request process but contain no information about emergency replacements or approval exceptions.",
+    "expected_answer_points": [
+      "Explain the standard laptop request process only if supported by the context.",
+      "Do not invent an emergency replacement exception.",
+      "Escalate if authoritative confirmation of an exception is required."
+    ],
+    "expected_needs_human": true
+  },
+  {
+    "test_id": "RAG-07",
+    "department": "HR",
+    "category": "knowledge_supported",
+    "query": "Where can I find the employee onboarding checklist?",
+    "knowledge_context": "The employee onboarding checklist is available in the HR Documents section of the employee portal. New employees should complete the checklist during their first week.",
+    "expected_answer_points": [
+      "Direct the user to the HR Documents section of the employee portal.",
+      "Mention that new employees should complete it during their first week."
+    ],
+    "expected_needs_human": false
+  },
+  {
+    "test_id": "RAG-08",
+    "department": "Administration",
+    "category": "knowledge_missing",
+    "query": "Can the university extend the deadline for my application?",
+    "knowledge_context": "The available Administration documents contain application submission instructions but do not mention deadline extension requests.",
+    "expected_answer_points": [
+      "Do not promise a deadline extension.",
+      "Explain that the available documents do not confirm the extension policy.",
+      "Recommend contacting Administration for confirmation."
+    ],
+    "expected_needs_human": true
+  }
+]

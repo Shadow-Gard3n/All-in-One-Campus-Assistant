@@ -1,0 +1,116 @@
+
+[
+  {
+    "test_id": "RT-01",
+    "category": "single_department",
+    "query": "I forgot my university email password. How can I reset it?",
+    "expected_routes": [
+      {
+        "department": "IT",
+        "question": "How can the user reset their university email password?"
+      }
+    ],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-02",
+    "category": "single_department",
+    "query": "I want to know how many casual leaves I can take this semester.",
+    "expected_routes": [
+      {
+        "department": "HR",
+        "question": "How many casual leaves can the user take this semester?"
+      }
+    ],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-03",
+    "category": "single_department",
+    "query": "How can I claim reimbursement for travel expenses?",
+    "expected_routes": [
+      {
+        "department": "Finance",
+        "question": "What is the process for claiming travel expense reimbursement?"
+      }
+    ],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-04",
+    "category": "multi_department",
+    "query": "My classroom projector is not working, and I also want to know how to get reimbursed for a book I purchased.",
+    "expected_routes": [
+      {
+        "department": "IT",
+        "question": "How can the user get help with a classroom projector that is not working?"
+      },
+      {
+        "department": "Finance",
+        "question": "How can the user get reimbursed for a purchased book?"
+      }
+    ],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-05",
+    "category": "multi_department",
+    "query": "I need a new laptop for my work and want to know if I can claim home internet expenses.",
+    "expected_routes": [
+      {
+        "department": "IT",
+        "question": "How can the user request a new work laptop?"
+      },
+      {
+        "department": "Finance",
+        "question": "Is the user eligible to claim home internet expenses?"
+      }
+    ],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-06",
+    "category": "ambiguous",
+    "query": "I have a problem with my account.",
+    "expected_routes": [],
+    "expected_needs_clarification": true
+  },
+  {
+    "test_id": "RT-07",
+    "category": "no_routing",
+    "query": "Hi, good morning!",
+    "expected_routes": [],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-08",
+    "category": "single_department",
+    "query": "The air conditioner in my office is not working.",
+    "expected_routes": [
+      {
+        "department": "Facilities",
+        "question": "How can the user report a broken office air conditioner?"
+      }
+    ],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-09",
+    "category": "single_department",
+    "query": "I need to update my employee records and correct my official details.",
+    "expected_routes": [
+      {
+        "department": "HR",
+        "question": "How can the user update or correct their employee records?"
+      }
+    ],
+    "expected_needs_clarification": false
+  },
+  {
+    "test_id": "RT-10",
+    "category": "ambiguous",
+    "query": "Who should I contact about this issue?",
+    "expected_routes": [],
+    "expected_needs_clarification": true
+  }
+]

@@ -1,0 +1,83 @@
+
+[
+  {
+    "test_id": "ESC-01",
+    "category": "knowledge_unavailable",
+    "department": "Finance",
+    "query": "Am I eligible for reimbursement for my home internet bill?",
+    "knowledge_context": "No home internet reimbursement policy is available in the Finance knowledge base.",
+    "expected_needs_human": true,
+    "expected_status": "waiting_for_agent",
+    "expected_reason": "The available organizational knowledge does not establish home internet reimbursement eligibility."
+  },
+  {
+    "test_id": "ESC-02",
+    "category": "low_confidence",
+    "department": "IT",
+    "query": "My system is not working properly. Can someone help?",
+    "knowledge_context": "The available documents contain general troubleshooting information but do not identify the user's specific problem.",
+    "expected_needs_human": true,
+    "expected_status": "waiting_for_agent",
+    "expected_reason": "The issue is too vague to provide a reliable solution."
+  },
+  {
+    "test_id": "ESC-03",
+    "category": "knowledge_supported",
+    "department": "IT",
+    "query": "How do I reset my university email password?",
+    "knowledge_context": "Users can reset their university email password through the official account recovery page. They must verify their identity before creating a new password.",
+    "expected_needs_human": false,
+    "expected_status": "resolved_by_ai",
+    "expected_reason": null
+  },
+  {
+    "test_id": "ESC-04",
+    "category": "human_judgment_required",
+    "department": "HR",
+    "query": "I have a personal situation and need an exception to the official leave policy. Can you approve it?",
+    "knowledge_context": "The HR knowledge base contains the standard leave policy but does not define an exception approval process.",
+    "expected_needs_human": true,
+    "expected_status": "waiting_for_agent",
+    "expected_reason": "The request requires an authorized human decision and an exception to the standard policy."
+  },
+  {
+    "test_id": "ESC-05",
+    "category": "multi_department_escalation",
+    "department": "Finance",
+    "query": "I need to purchase a new laptop urgently. Can the university reimburse me if I purchase it myself today?",
+    "knowledge_context": "IT documents describe the standard equipment request process. Finance documents describe ordinary reimbursement submissions but do not cover employee-purchased laptops or reimbursement exceptions.",
+    "expected_needs_human": true,
+    "expected_status": "waiting_for_agent",
+    "expected_reason": "The purchase and reimbursement exception cannot be confirmed from the available organizational knowledge."
+  },
+  {
+    "test_id": "ESC-06",
+    "category": "insufficient_information",
+    "department": "Facilities",
+    "query": "Please fix the problem in my office as soon as possible.",
+    "knowledge_context": "Facilities requests require the room number, a description of the issue, and its urgency. The user has not provided these details.",
+    "expected_needs_human": true,
+    "expected_status": "waiting_for_agent",
+    "expected_reason": "The issue cannot be identified because the user has not provided sufficient details."
+  },
+  {
+    "test_id": "ESC-07",
+    "category": "knowledge_supported",
+    "department": "Finance",
+    "query": "What documents are required for travel reimbursement?",
+    "knowledge_context": "Travel reimbursement requests must include original receipts and a completed expense report submitted through the Finance portal.",
+    "expected_needs_human": false,
+    "expected_status": "resolved_by_ai",
+    "expected_reason": null
+  },
+  {
+    "test_id": "ESC-08",
+    "category": "authoritative_confirmation",
+    "department": "Administration",
+    "query": "Can you confirm that my application deadline will be extended?",
+    "knowledge_context": "The available application guidelines specify the original deadline but do not mention extensions or individual deadline exceptions.",
+    "expected_needs_human": true,
+    "expected_status": "waiting_for_agent",
+    "expected_reason": "An extension cannot be confirmed without authoritative approval from Administration."
+  }
+]
