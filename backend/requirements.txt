@@ -6,3 +6,10 @@ PyJWT
 pwdlib[argon2]
 email-validator
 python-dotenv
+google-genai
+supabase
+python-multipart
+sentence-transformers
+pypdf
+python-docx
+ollama

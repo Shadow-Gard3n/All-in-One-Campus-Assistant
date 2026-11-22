@@ -22,23 +22,35 @@ function Login() {
             const loggedInUser = await login(email, password);
 
             if (loggedInUser.role === "platform_admin") {
+
                 navigate("/platform-admin");
+
             } else if (loggedInUser.role === "org_admin") {
+
                 navigate("/organisation-admin");
+
             } else if (loggedInUser.role === "support_agent") {
-                navigate("/dashboard");
-            } else if (loggedInUser.role === "user") {
+                navigate("/support");
+
+            } else if (
+                loggedInUser.role === "user"
+            ) {
                 navigate("/dashboard");
             } else {
+
                 setError("Unknown user role.");
             }
+
         } catch (error) {
+
             const message =
                 error.response?.data?.detail ||
                 "Invalid email or password.";
 
             setError(message);
+
         } finally {
+
             setLoading(false);
         }
     };

@@ -11,6 +11,9 @@ from routes import (
     join_requests,
     platform_admin,
     organisation_admin,
+    conversations,
+    support,
+    knowledge
 )
 
 @asynccontextmanager
@@ -62,6 +65,9 @@ app.include_router(departments.router)
 app.include_router(join_requests.router)
 app.include_router(platform_admin.router)
 app.include_router(organisation_admin.router)
+app.include_router(conversations.router)
+app.include_router(support.router)
+app.include_router(knowledge.router)
 
 
 @app.get("/")

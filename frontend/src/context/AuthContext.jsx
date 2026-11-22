@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     // --------------------------------------------------
-    // Load logged-in user
+    // Load logged-in user when app starts
     // --------------------------------------------------
 
     useEffect(() => {
@@ -46,13 +46,16 @@ export function AuthProvider({ children }) {
     // --------------------------------------------------
 
     const login = async (email, password) => {
+        // 1. Login
         const response = await api.post("/auth/login", {
             email,
             password,
         });
 
+        // 2. Get JWT
         const accessToken = response.data.access_token;
 
+        // 3. Save JWT
         localStorage.setItem(
             "access_token",
             accessToken
@@ -60,12 +63,22 @@ export function AuthProvider({ children }) {
 
         setToken(accessToken);
 
-        // Fetch complete user information
-        const userResponse = await api.get("/auth/me");
+        // 4. Get current user
+        // Use the token explicitly here because React
+        // state update above is asynchronous.
+        const userResponse = await api.get("/auth/me", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
 
-        setUser(userResponse.data);
+        const loggedInUser = userResponse.data;
 
-        return userResponse.data;
+        // 5. Store user
+        setUser(loggedInUser);
+
+        // 6. Return user to Login.jsx
+        return loggedInUser;
     };
 
     // --------------------------------------------------
@@ -80,17 +93,25 @@ export function AuthProvider({ children }) {
         role,
         department_id,
     }) => {
-        const response = await api.post("/auth/register", {
-            name,
-            email,
-            password,
-            organisation_id,
-            role,
-            department_id:
-                role === "support_agent"
-                    ? department_id
-                    : null,
-        });
+        const response = await api.post(
+            "/auth/register",
+            {
+                name,
+                email,
+                password,
+
+                organisation_id,
+
+                role,
+
+                // Normal user → null
+                // Support agent → selected department
+                department_id:
+                    role === "support_agent"
+                        ? department_id
+                        : null,
+            }
+        );
 
         return response.data;
     };
@@ -105,6 +126,10 @@ export function AuthProvider({ children }) {
         setToken(null);
         setUser(null);
     };
+
+    // --------------------------------------------------
+    // Context value
+    // --------------------------------------------------
 
     const value = {
         token,

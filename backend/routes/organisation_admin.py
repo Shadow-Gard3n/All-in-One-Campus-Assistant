@@ -8,6 +8,7 @@ from database import (
     join_requests_collection,
 )
 from utils.dependencies import require_roles
+from datetime import datetime, timezone
 
 router = APIRouter(
     prefix="/organisation-admin",
@@ -94,7 +95,8 @@ async def get_users(
     users = []
 
     cursor = users_collection.find({
-        "organisation_id": organisation_id
+        "organisation_id": organisation_id,
+        "is_active": True
     })
 
     async for user in cursor:
@@ -327,28 +329,417 @@ async def delete_department(
 
 @router.get("/join-requests")
 async def get_join_requests(
-    current_user=Depends(require_roles("org_admin"))
+    current_user=Depends(
+        require_roles("org_admin")
+    )
 ):
     organisation_id = current_user["organisation_id"]
 
+    cursor = join_requests_collection.find({
+        "organisation_id": organisation_id,
+        "status": "pending"
+    }).sort(
+        "created_at",
+        -1
+    )
+
     requests = []
 
-    cursor = join_requests_collection.find({
-        "organisation_id": organisation_id
-    }).sort("created_at", -1)
-
     async for request in cursor:
+
+        # Find the user who submitted the request
+        user = await users_collection.find_one({
+            "_id": request["user_id"]
+        })
+
+        # User may have been deleted
+        if not user:
+            continue
+
         requests.append({
             "id": str(request["_id"]),
-            "user_id": str(request["user_id"]),
-            "role": request["role"],
+
+            "user": {
+                "id": str(user["_id"]),
+                "name": user["name"],
+                "email": user["email"]
+            },
+
+            "requested_role": request["requested_role"],
+
             "department_id": (
                 str(request["department_id"])
                 if request.get("department_id")
                 else None
             ),
+
             "status": request["status"],
+
             "created_at": request.get("created_at")
         })
 
     return requests
+
+
+
+# ============================================================
+# UPDATE USER
+# ============================================================
+
+@router.patch("/users/{user_id}")
+async def update_user(
+    user_id: str,
+    data: dict,
+    current_user=Depends(
+        require_roles("org_admin")
+    )
+):
+
+    organisation_id = current_user["organisation_id"]
+
+    # --------------------------------------------------------
+    # Validate user ID
+    # --------------------------------------------------------
+
+    try:
+
+        user_object_id = ObjectId(user_id)
+
+    except InvalidId:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid user ID"
+        )
+
+    # --------------------------------------------------------
+    # Find user inside this organisation
+    # --------------------------------------------------------
+
+    user = await users_collection.find_one({
+        "_id": user_object_id,
+        "organisation_id": organisation_id
+    })
+
+    if not user:
+
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    # --------------------------------------------------------
+    # Do not allow organisation admin to modify themselves
+    # through this endpoint
+    # --------------------------------------------------------
+
+    if user["_id"] == current_user["_id"]:
+
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot modify your own account here"
+        )
+
+    # --------------------------------------------------------
+    # Allowed fields
+    # --------------------------------------------------------
+
+    update_data = {}
+
+    # --------------------------------------------------------
+    # NAME
+    # --------------------------------------------------------
+
+    if "name" in data:
+
+        name = str(
+            data["name"]
+        ).strip()
+
+        if len(name) < 2:
+
+            raise HTTPException(
+                status_code=400,
+                detail="Name must contain at least 2 characters"
+            )
+
+        update_data["name"] = name
+
+    # --------------------------------------------------------
+    # ROLE
+    # --------------------------------------------------------
+
+    if "role" in data:
+
+        role = data["role"]
+
+        if role not in [
+            "user",
+            "support_agent"
+        ]:
+
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Organisation admin can only assign "
+                    "user or support_agent role"
+                )
+            )
+
+        update_data["role"] = role
+
+    # --------------------------------------------------------
+    # DEPARTMENT
+    # --------------------------------------------------------
+
+    if "department_id" in data:
+
+        department_value = data["department_id"]
+
+        # Normal user
+        if update_data.get(
+            "role",
+            user["role"]
+        ) == "user":
+
+            if department_value not in [
+                None,
+                "",
+                "null"
+            ]:
+
+                raise HTTPException(
+                    status_code=400,
+                    detail="User role cannot have a department"
+                )
+
+            update_data["department_id"] = None
+
+        # Support agent
+        else:
+
+            if not department_value:
+
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Support agent must have "
+                        "a department"
+                    )
+                )
+
+            try:
+
+                department_object_id = ObjectId(
+                    department_value
+                )
+
+            except InvalidId:
+
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid department ID"
+                )
+
+            department = await departments_collection.find_one({
+                "_id": department_object_id,
+                "organisation_id": organisation_id,
+                "is_active": True
+            })
+
+            if not department:
+
+                raise HTTPException(
+                    status_code=404,
+                    detail="Department not found"
+                )
+
+            update_data[
+                "department_id"
+            ] = department_object_id
+
+    # --------------------------------------------------------
+    # If changing role to support_agent
+    # department MUST be provided
+    # --------------------------------------------------------
+
+    new_role = update_data.get(
+        "role",
+        user["role"]
+    )
+
+    if new_role == "support_agent":
+
+        department_id = update_data.get(
+            "department_id",
+            user.get("department_id")
+        )
+
+        if not department_id:
+
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Support agent must have "
+                    "a department"
+                )
+            )
+
+    # --------------------------------------------------------
+    # If changing role to user
+    # department MUST become null
+    # --------------------------------------------------------
+
+    if new_role == "user":
+
+        update_data["department_id"] = None
+
+    # --------------------------------------------------------
+    # Nothing to update
+    # --------------------------------------------------------
+
+    if not update_data:
+
+        raise HTTPException(
+            status_code=400,
+            detail="No changes provided"
+        )
+
+    # --------------------------------------------------------
+    # Update
+    # --------------------------------------------------------
+
+    await users_collection.update_one(
+        {
+            "_id": user_object_id,
+            "organisation_id": organisation_id
+        },
+        {
+            "$set": update_data
+        }
+    )
+
+    # --------------------------------------------------------
+    # Get updated user
+    # --------------------------------------------------------
+
+    updated_user = await users_collection.find_one({
+        "_id": user_object_id
+    })
+
+    return {
+        "message": "User updated successfully",
+
+        "user": {
+            "id": str(updated_user["_id"]),
+            "name": updated_user["name"],
+            "email": updated_user["email"],
+            "role": updated_user["role"],
+
+            "department_id": (
+                str(updated_user["department_id"])
+                if updated_user.get("department_id")
+                else None
+            ),
+
+            "is_active": updated_user.get(
+                "is_active",
+                True
+            )
+        }
+    }
+
+
+# ============================================================
+# DELETE USER
+# ============================================================
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user=Depends(
+        require_roles("org_admin")
+    )
+):
+
+    organisation_id = current_user["organisation_id"]
+
+    # --------------------------------------------------------
+    # Validate ID
+    # --------------------------------------------------------
+
+    try:
+
+        user_object_id = ObjectId(user_id)
+
+    except InvalidId:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid user ID"
+        )
+
+    # --------------------------------------------------------
+    # Find user
+    # --------------------------------------------------------
+
+    user = await users_collection.find_one({
+        "_id": user_object_id,
+        "organisation_id": organisation_id
+    })
+
+    if not user:
+
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    # --------------------------------------------------------
+    # Cannot delete yourself
+    # --------------------------------------------------------
+
+    if user["_id"] == current_user["_id"]:
+
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot delete your own account"
+        )
+
+    # --------------------------------------------------------
+    # Cannot delete another organisation admin
+    # --------------------------------------------------------
+
+    if user["role"] == "org_admin":
+
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Organisation admin accounts "
+                "cannot be deleted here"
+            )
+        )
+
+    # --------------------------------------------------------
+    # Soft delete
+    # --------------------------------------------------------
+
+    await users_collection.update_one(
+        {
+            "_id": user_object_id,
+            "organisation_id": organisation_id
+        },
+        {
+            "$set": {
+                "is_active": False,
+                "deleted_at": datetime.now(timezone.utc),
+                "deleted_by": current_user["_id"]
+            }
+        }
+    )
+
+    return {
+        "message": "User deleted successfully"
+    }
+
+
